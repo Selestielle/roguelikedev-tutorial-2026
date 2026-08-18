@@ -7,8 +7,9 @@ from tcod.tileset import Tileset
 
 from engine import Engine
 from entity import Entity
-from game_map import GameMap
 from input_handlers import EventHandler
+from procgen import generate_dungeon
+from procgen_bsp import generate_dungeon_bsp
 
 
 def get_context_size(display_id: Any, tileset: Tileset, columns: int, rows: int) -> tuple[int]:
@@ -24,6 +25,16 @@ def main() -> None:
     map_width = 80
     map_height = 45
 
+    room_max_size = 10
+    room_min_size = 6
+    max_rooms = 30
+
+    use_bsp = True
+    bsp_max_depth = 6
+    bsp_node_min_size = 10
+    bsp_max_horizontal_ratio = 1.5
+    bsp_max_vertical_ratio = 1.5
+
     tileset = tcod.tileset.load_tilesheet(
         "cp437_12x12.png", 16, 16, tcod.tileset.CHARMAP_CP437
     )
@@ -36,9 +47,35 @@ def main() -> None:
     npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), "@", (255, 255, 0))
     entities = {npc, player}
 
-    game_map = GameMap(map_width, map_height)
+    if use_bsp:
+        game_map = generate_dungeon_bsp(
+            map_width=map_width,
+            map_height=map_height,
+            max_depth=bsp_max_depth,
+            node_min_size=bsp_node_min_size,
+            max_horizontal_ratio=bsp_max_horizontal_ratio,
+            max_vertical_ratio=bsp_max_vertical_ratio,
+            room_min_size=room_min_size,
+            room_max_size=room_max_size,
+            player=player
+        )
+    else:
+        game_map = generate_dungeon(
+            max_rooms=max_rooms,
+            room_min_size=room_min_size,
+            room_max_size=room_max_size,
+            map_width=map_width,
+            map_height=map_height,
+            player=player
+        )
+
     event_handler = EventHandler()
-    engine = Engine(entities, event_handler, game_map, player)
+    engine = Engine(
+        entities=entities,
+        event_handler=event_handler,
+        game_map=game_map,
+        player=player
+    )
 
     with tcod.context.new(
         width=context_size[0],
@@ -56,7 +93,12 @@ def main() -> None:
                 if isinstance(event, tcod.event.WindowEvent):
                     if (event.type == "DisplayScaleChanged"):
                         display_id = tcod.lib.SDL_GetDisplayForWindow(context.sdl_window_p)
-                        context.sdl_window.size = get_context_size(display_id, tileset, screen_width, screen_height)
+                        context.sdl_window.size = get_context_size(
+                            display_id,
+                            tileset,
+                            screen_width,
+                            screen_height
+                        )
                         continue
 
                 engine.handle_event(event)

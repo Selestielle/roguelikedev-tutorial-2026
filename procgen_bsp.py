@@ -5,7 +5,7 @@ import tcod
 
 import tile_types
 from game_map import GameMap
-from procgen import RectangularRoom, tunnel_between
+from procgen import RectangularRoom, place_entities, tunnel_between
 
 if TYPE_CHECKING:
     from entity import Entity
@@ -20,10 +20,11 @@ def generate_dungeon_bsp(
         max_vertical_ratio: int,
         room_min_size: int,
         room_max_size: int,
+        max_monsters_per_room: int,
         player: Entity
 ) -> GameMap:
     """Generate a new dungeon map using binary space partitioning."""
-    dungeon = GameMap(map_width, map_height)
+    dungeon = GameMap(map_width, map_height, [player])
     rooms: List[RectangularRoom] = []
 
     bsp = tcod.bsp.BSP(0, 0, map_width - 1, map_height - 1)
@@ -39,14 +40,17 @@ def generate_dungeon_bsp(
         if node.children:
             pass
         else:
-            room_width = random.randint(room_min_size, node.width)
-            room_height = random.randint(room_min_size, node.height)
+            room_width = random.randint(room_min_size, min(node.width, room_max_size))
+            room_height = random.randint(room_min_size, min(node.height, room_max_size))
 
             x = random.randint(node.x, node.x + node.width - room_width)
             y = random.randint(node.y, node.y + node.height - room_height)
 
             new_room = RectangularRoom(x, y, room_width, room_height)
             dungeon.tiles[new_room.inner] = tile_types.floor
+
+            place_entities(new_room, dungeon, max_monsters_per_room)
+
             rooms.append(new_room)
 
     connected: List[RectangularRoom] = [rooms.pop()]
@@ -74,7 +78,9 @@ def find_next_connection(
 
     for connected_room in connected:
         for unconnected_room in unconnected:
-            distance = abs(connected_room.center[0] - unconnected_room.center[0]) + abs(connected_room.center[1] - unconnected_room.center[1])
+            abs_x = abs(connected_room.center[0] - unconnected_room.center[0])
+            abs_y = abs(connected_room.center[1] - unconnected_room.center[1])
+            distance = abs_x + abs_y 
             if distance < distance_to_nearest or nearest_unconnected == None:
                 nearest_connected = connected_room
                 nearest_unconnected = unconnected_room

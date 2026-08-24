@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
+import copy
 import warnings
 from typing import Any
 
 import tcod
 from tcod.tileset import Tileset
 
+import entity_factories
 from engine import Engine
-from entity import Entity
 from input_handlers import EventHandler
 from procgen import generate_dungeon
 from procgen_bsp import generate_dungeon_bsp
@@ -29,6 +30,8 @@ def main() -> None:
     room_min_size = 6
     max_rooms = 30
 
+    max_monsters_per_room = 2
+
     use_bsp = True
     bsp_max_depth = 6
     bsp_node_min_size = 10
@@ -43,9 +46,7 @@ def main() -> None:
     display_id = tcod.lib.SDL_GetPrimaryDisplay()
     context_size = get_context_size(display_id, tileset, screen_width, screen_height)
 
-    player = Entity(int(screen_width / 2), int(screen_height / 2), "@", (255, 255, 255))
-    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), "@", (255, 255, 0))
-    entities = {npc, player}
+    player = copy.deepcopy(entity_factories.player)
 
     if use_bsp:
         game_map = generate_dungeon_bsp(
@@ -57,6 +58,7 @@ def main() -> None:
             max_vertical_ratio=bsp_max_vertical_ratio,
             room_min_size=room_min_size,
             room_max_size=room_max_size,
+            max_monsters_per_room=max_monsters_per_room,
             player=player
         )
     else:
@@ -66,12 +68,12 @@ def main() -> None:
             room_max_size=room_max_size,
             map_width=map_width,
             map_height=map_height,
+            max_monsters_per_room=max_monsters_per_room,
             player=player
         )
 
     event_handler = EventHandler()
     engine = Engine(
-        entities=entities,
         event_handler=event_handler,
         game_map=game_map,
         player=player

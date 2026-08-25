@@ -7,4 +7,5 @@ I'm participating in [RoguelikeDev Does The Complete Roguelike Tutorial](https:/
 ## Devlog
 
 - [Week 1](/devlog/week1.md)
-- Week 2 *(coming soon!)*
+- [Week 2](/devlog/week2.md)
+- [Week 3](/devlog/week3.md)

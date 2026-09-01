@@ -8,6 +8,7 @@ from game_map import GameMap
 from procgen import RectangularRoom, place_entities, tunnel_between
 
 if TYPE_CHECKING:
+    from engine import Engine
     from entity import Entity
 
 
@@ -21,10 +22,11 @@ def generate_dungeon_bsp(
         room_min_size: int,
         room_max_size: int,
         max_monsters_per_room: int,
-        player: Entity
+        engine: Engine
 ) -> GameMap:
     """Generate a new dungeon map using binary space partitioning."""
-    dungeon = GameMap(map_width, map_height, [player])
+    player = engine.player
+    dungeon = GameMap(engine, map_width, map_height, [player])
     rooms: List[RectangularRoom] = []
 
     bsp = tcod.bsp.BSP(0, 0, map_width - 1, map_height - 1)
@@ -63,7 +65,7 @@ def generate_dungeon_bsp(
         for x, y in tunnel_between(new_connection[0].center, new_connection[1].center):
             dungeon.tiles[x, y] = tile_types.floor
 
-    player.x, player.y = connected[0].center
+    player.place(*connected[0].center, dungeon)
 
     return dungeon
 

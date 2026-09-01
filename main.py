@@ -48,8 +48,10 @@ def main() -> None:
 
     player = copy.deepcopy(entity_factories.player)
 
+    engine = Engine(player=player)
+
     if use_bsp:
-        game_map = generate_dungeon_bsp(
+        engine.game_map = generate_dungeon_bsp(
             map_width=map_width,
             map_height=map_height,
             max_depth=bsp_max_depth,
@@ -59,25 +61,20 @@ def main() -> None:
             room_min_size=room_min_size,
             room_max_size=room_max_size,
             max_monsters_per_room=max_monsters_per_room,
-            player=player
+            engine=engine
         )
     else:
-        game_map = generate_dungeon(
+        engine.game_map = generate_dungeon(
             max_rooms=max_rooms,
             room_min_size=room_min_size,
             room_max_size=room_max_size,
             map_width=map_width,
             map_height=map_height,
             max_monsters_per_room=max_monsters_per_room,
-            player=player
+            engine=engine
         )
 
-    event_handler = EventHandler()
-    engine = Engine(
-        event_handler=event_handler,
-        game_map=game_map,
-        player=player
-    )
+    engine.update_fov()
 
     with tcod.context.new(
         width=context_size[0],
@@ -103,7 +100,7 @@ def main() -> None:
                         )
                         continue
 
-                engine.handle_event(event)
+                engine.event_handler.handle_event(event)
 
 
 if __name__ == "__main__": 

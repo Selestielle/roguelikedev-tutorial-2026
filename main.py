@@ -8,7 +8,6 @@ from tcod.tileset import Tileset
 
 import entity_factories
 from engine import Engine
-from input_handlers import EventHandler
 from procgen import generate_dungeon
 from procgen_bsp import generate_dungeon_bsp
 

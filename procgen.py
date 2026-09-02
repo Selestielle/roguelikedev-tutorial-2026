@@ -9,7 +9,6 @@ from game_map import GameMap
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Entity
 
 
 class RectangularRoom:

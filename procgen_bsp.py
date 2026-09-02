@@ -1,5 +1,5 @@
 import random
-from typing import Iterator, List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, TYPE_CHECKING
 
 import tcod
 
@@ -9,7 +9,6 @@ from procgen import RectangularRoom, place_entities, tunnel_between
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Entity
 
 
 def generate_dungeon_bsp(
